@@ -46,9 +46,8 @@ input_basedir = os.path.join(gdrive_basedir, '{}\scenes'.format(args.song))
 
 #%%
 
-scene_sequence_name = "scene_sequence" if args.scene_sequence == '' else "scene_sequence_{}".format(args.scene_sequence)
-fp_scene_sequence = os.path.join(os.getenv('repo_dir'), 'song_meta', args.song, '{}.csv'.format(scene_sequence_name))
-df_scene_sequence = pd.read_csv(fp_scene_sequence , index_col=0).reset_index(drop=True)
+from aa_utils.local import load_df_scene_sequence
+df_scene_sequence = load_df_scene_sequence(args.scene_sequence, args.song, dir_option=os.getenv('ss_dir_option')).reset_index(drop=True)
 
 scene_sequence_list = df_scene_sequence['scene'].values.tolist()
 
@@ -97,7 +96,14 @@ df_scene_sequence2 = df_scene_sequence.copy()
 # if first row start value is NaN, raise error
 
 if pd.isna(df_scene_sequence2['start'].iloc[0]):
-    raise ValueError("First row start value is NaN, need a start image") 
+    # raise ValueError("First row start value is NaN, need a start image") 
+    print("First row start value is NaN, picking a random start image. Warning, if this image is disconnected you will need to spin again.")
+    # pick a random start image
+
+    first_scene = df_scene_sequence2['scene'].iloc[0]
+    first_scene_nodes = [node for node in G_sequence.nodes if G_sequence.nodes[node]['scene'] == first_scene]
+    start_node = np.random.choice(first_scene_nodes)
+    df_scene_sequence2['start'].iloc[0] = start_node
 
 df_scene_sequence2['start'] = df_scene_sequence2['start'].ffill()
 
@@ -174,6 +180,7 @@ for idx, df_path_section in df_scene_sequence2.groupby('path_section'):
 
     for j in range(max_duration_add):
         max_duration = total_duration + j
+        print("Trying max_duration: ", max_duration)
         all_paths = list(nx.all_simple_paths(subgraph, start_node, end_node, cutoff=max_duration))
 
         if len(all_paths) > 0:
