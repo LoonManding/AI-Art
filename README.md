@@ -43,6 +43,21 @@ transfer back images to local
 
 gen_ss.sh has the sequence of steps to make a song
 
+this 
+1. builds graph from transition_images folder
+2. generates a path through graph with story_*.py, path is otput into trans_sequence.csv
+3. run gen_movie.py with trans_sequence.csv to run ffmpeg and generate videos. 
+    run `gen_movie.py -i test` to read transition sequence trans_sequence_test.csv
+
+
+revert to a previous version of scene sequence in vscode:
+1. install gitlens extension
+2. right click - file history - show file history
+3. right click commit message in the 'file history' dropdown
+4. restore (checkout)
+
+5. unstage and revert to undo
+
 ### Folder structure
 
 transition_sequence.csv - final sequence used by ffmpeg to generate a movie
